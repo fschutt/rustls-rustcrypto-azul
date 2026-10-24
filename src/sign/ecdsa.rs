@@ -2,7 +2,6 @@
 use alloc::{boxed::Box, format, sync::Arc};
 use core::marker::PhantomData;
 
-use der::Decode;
 use paste::paste;
 use pkcs8::DecodePrivateKey;
 use pki_types::PrivateKeyDer;
@@ -10,7 +9,7 @@ use rustls::sign::SigningKey;
 use rustls::{SignatureAlgorithm, SignatureScheme};
 
 macro_rules! impl_ecdsa {
-    ($name: ident, $scheme: expr, $signing_key: ty, $signature: ty) => {
+    ($name: ident, $scheme: expr, $secret_key: ty, $signing_key: ty, $signature: ty) => {
         paste! {
             #[derive(Debug)]
             pub struct [<EcdsaSigningKey $name>] {
@@ -27,13 +26,12 @@ macro_rules! impl_ecdsa {
                             $signing_key::from_pkcs8_der(der.secret_pkcs8_der()).map_err(|e| format!("failed to decrypt private key: {e}"))
                         },
                         PrivateKeyDer::Pkcs1(_) => Err(format!("ECDSA does not support PKCS#1 key")),
+                        // The curve's SecretKey parses SEC1 so that a key naming another curve, or
+                        // carrying a public key that does not match, is refused, not reinterpreted.
                         PrivateKeyDer::Sec1(der) => {
-                            sec1::EcPrivateKey::from_der(der.secret_sec1_der())
-                                .map_err(|e| format!("failed to parse SEC1 EC private key: {e}"))
-                                .and_then(|ec_key| {
-                                    $signing_key::from_slice(ec_key.private_key)
-                                        .map_err(|e| format!("failed to create signing key: {e}"))
-                                })
+                            <$secret_key>::from_sec1_der(der.secret_sec1_der())
+                                .map(|secret| <$signing_key>::from(&secret))
+                                .map_err(|e| format!("failed to decrypt private key: {e}"))
                         },
                         _ => Err("not supported".into()),
                     };
@@ -67,5 +65,5 @@ macro_rules! impl_ecdsa {
     };
 }
 
-impl_ecdsa! {P256, SignatureScheme::ECDSA_NISTP256_SHA256, p256::ecdsa::SigningKey, p256::ecdsa::DerSignature}
-impl_ecdsa! {P384, SignatureScheme::ECDSA_NISTP384_SHA384, p384::ecdsa::SigningKey, p384::ecdsa::DerSignature}
+impl_ecdsa! {P256, SignatureScheme::ECDSA_NISTP256_SHA256, p256::SecretKey, p256::ecdsa::SigningKey, p256::ecdsa::DerSignature}
+impl_ecdsa! {P384, SignatureScheme::ECDSA_NISTP384_SHA384, p384::SecretKey, p384::ecdsa::SigningKey, p384::ecdsa::DerSignature}

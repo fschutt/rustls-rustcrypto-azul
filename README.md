@@ -1,4 +1,21 @@
-# rustls-rustcrypto
+# rustls-rustcrypto-azul
+
+> **azul fork.** This is `rustls-rustcrypto-azul`, a fork of
+> [`rustls-rustcrypto`](https://github.com/RustCrypto/rustls-rustcrypto) for the
+> [azul](https://github.com/fschutt/azul) GUI framework. The newest upstream release,
+> 0.0.2-alpha, is built on p256/p384 0.13, whose crypto-bigint 0.5 leaks timing in its
+> Montgomery multiplication (RUSTSEC-2026-0387), and it pulls in rustls-webpki 0.102, a line
+> without security fixes. Upstream's master already moved to the elliptic-curve 0.14 /
+> crypto-bigint 0.7 generation but is not released; a `[patch]` cannot reach the users of a
+> published crate, so this fork publishes that master (commit `70f76c0`) with three changes:
+>
+> - crypto-bigint is held at 0.7.6 or newer, the first release with the timing fixes;
+> - a SEC1 EC key is parsed by its curve's `SecretKey` again, so a key of another curve or with a
+>   mismatching public key is refused, as in 0.0.2-alpha (upstream's master took the raw scalar);
+> - an in-memory handshake test covering every suite, key exchange group and key type.
+>
+> The library keeps upstream's name, so `rustls_rustcrypto::provider()` works unchanged. Use the
+> official `rustls-rustcrypto` crate once it releases this generation.
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -47,13 +64,13 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (badges)
 
 [crate-image]: https://img.shields.io/crates/v/rustls-rustcrypto
-[crate-link]: https://crates.io/crates/rustls-rustcrypto
-[docs-image]: https://docs.rs/rustls-rustcrypto/badge.svg
-[docs-link]: https://docs.rs/rustls-rustcrypto/
+[crate-link]: https://crates.io/crates/rustls-rustcrypto-azul
+[docs-image]: https://docs.rs/rustls-rustcrypto-azul/badge.svg
+[docs-link]: https://docs.rs/rustls-rustcrypto-azul/
 [build-image]: https://github.com/RustCrypto/rustls-rustcrypto/actions/workflows/rustls-rustcrypto.yml/badge.svg
 [build-link]: https://github.com/RustCrypto/rustls-rustcrypto/actions/workflows/rustls-rustcrypto.yml
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.75+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.87+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/434751-TLS
 

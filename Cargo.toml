@@ -1,19 +1,27 @@
 [package]
-name = "rustls-rustcrypto"
+name = "rustls-rustcrypto-azul"
 description = """
 Pure Rust cryptography provider for the Rustls TLS library using algorithm implementations from the
-RustCrypto organization
+RustCrypto organization (azul's fork of rustls-rustcrypto: the unreleased upstream master on the
+elliptic-curve 0.14 / crypto-bigint 0.7 generation, published so dependents need no [patch];
+otherwise upstream's code)
 """
-version = "0.0.2-alpha"
+version = "0.1.0"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-repository = "https://github.com/RustCrypto/rustls-rustcrypto"
+repository = "https://github.com/fschutt/rustls-rustcrypto-azul"
+homepage = "https://github.com/RustCrypto/rustls-rustcrypto"
 categories = ["cryptography", "no-std"]
 keywords = ["rustls", "tls"]
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.87"
 resolver = "1" # Hack to enable the `custom` feature of `getrandom`
+
+# The library keeps upstream's name, so code written against rustls-rustcrypto
+# (`rustls_rustcrypto::provider()`) works unchanged.
+[lib]
+name = "rustls_rustcrypto"
 
 # Ensure all dependencies + feats are mapped to crate features for correct usage
 # default features often have std breaking no_std and potentially other unwanted
@@ -22,6 +30,10 @@ aead = { version = "0.6", default-features = false }
 aes-gcm = { version = "0.11", default-features = false, features = ["aes", "alloc"] }
 chacha20poly1305 = { version = "0.11", default-features = false }
 crypto-common = { version = "0.2", default-features = false }
+# Not used directly: p256, p384 and rsa compute on crypto-bigint, and releases before 0.7.6 leak
+# timing in Montgomery multiplication and friends (RUSTSEC-2026-0387). Naming it here keeps every
+# resolution of this crate on a fixed release.
+crypto-bigint = { version = "0.7.6", default-features = false }
 der = { version = "0.8", default-features = false }
 digest = { version = "0.11", default-features = false }
 ecdsa = { version = "0.17", default-features = false, features = ["alloc"] }
