@@ -7,9 +7,12 @@
 > Montgomery multiplication (RUSTSEC-2026-0387), and it pulls in rustls-webpki 0.102, a line
 > without security fixes. Upstream's master already moved to the elliptic-curve 0.14 /
 > crypto-bigint 0.7 generation but is not released; a `[patch]` cannot reach the users of a
-> published crate, so this fork publishes that master (commit `70f76c0`) with three changes:
+> published crate, so this fork publishes that master (commit `70f76c0`) with four changes:
 >
 > - crypto-bigint is held at 0.7.6 or newer, the first release with the timing fixes;
+> - rsa is the final 0.10.0 (since 0.1.1), not the release candidate upstream's master names: the
+>   candidate's `sha2` feature does not exist in 0.10.0, so a crate using 0.10.0 could not share a
+>   dependency graph with it;
 > - a SEC1 EC key is parsed by its curve's `SecretKey` again, so a key of another curve or with a
 >   mismatching public key is refused, as in 0.0.2-alpha (upstream's master took the raw scalar);
 > - an in-memory handshake test covering every suite, key exchange group and key type.

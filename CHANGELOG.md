@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## rustls-rustcrypto-azul 0.1.1 - 2026-11-20
+
+### Changed
+- rsa 0.10.0 (final) instead of the release candidates: `rsa = "0.10.0"` with the features
+  `encoding` and `pkcs1v15`. 0.1.0 asked for `0.10.0-rc.18` with the feature `sha2`, which rsa 0.10.0
+  no longer has (sha2 is a plain dependency of rsa now), so a crate that depends on rsa 0.10.0 could
+  not share one dependency graph with 0.1.0: cargo keeps one rsa per 0.10 series, and the release
+  candidate and 0.10.0 cannot both be it. The public API is unchanged; sha2 0.11 stays this crate's
+  own dependency. The code only follows rsa 0.10.0's rename of `RsaPrivateKey` and `RsaPublicKey` to
+  `PrivateKey` and `PublicKey` (the old names are deprecated aliases there).
+
 ## rustls-rustcrypto-azul 0.1.0 - 2026-10-24
 
 The first release of the azul fork, built from upstream's master at `70f76c0`.
